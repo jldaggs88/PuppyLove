@@ -39,6 +39,7 @@ const getDogs = async (id, req, res) => {
 };
 
 const getFriendsList = () => User.findAll({
+  
 });
 
 const getCurrentDog = (userId) => Dog.findAll({ where: { id_user: userId } });
