@@ -9,6 +9,7 @@ import DogProfile from './DogProfile.jsx';
 import PopularLocations from './PopularLocations.jsx';
 import SignUp from './SignUp.jsx';
 import Preferences from './Preferences.jsx';
+import FriendsList from './FriendsList.jsx';
 
 function App(props) {
    const [ lat, setLat ] = useState('');
@@ -21,6 +22,7 @@ function App(props) {
    const [ friends, setFriends ] = useState('');
    const [ index, setIndex ] = useState(0);
    const [ filter, setFilter ] = useState(0);
+   const [ friendsList, setFriendsList ] = useState([]);
 
    useEffect(() => {
       axios.get('/session')
@@ -121,6 +123,14 @@ function App(props) {
          );
       }));
    }
+   // request the GET all current users friends
+   useEffect(()=>{
+      axios.get(`/friendslist/`, {
+      })
+      .then(res => setFriendsList(res.data))
+      .catch(err => console.error('error getting friendslist', err));
+   }, [])
+
 
    return (
       <Router>
@@ -138,6 +148,7 @@ function App(props) {
                <Route path="/popular" render={() => (<PopularLocations sessUser={sessUser} sessDog={sessDog} google={props.google} open={open} center={{ lat: 29.9511, lng: 90.0715 }} zoom={10} />)} />
                <Route path="/signUp" render={() => (<SignUp sessUser={sessUser} sessDog={sessDog} getSessDog={getSessDog}/>)} />
                <Route path="/preferences" render={() => (<Preferences open={open} filterDogs={filterDogs} setFilter={setFilter} setIndex={setIndex}></Preferences>)} />
+               <Route path="/friendslist" render={() => (<FriendsList open={open} friendsList={friendsList} />)} />
             </Switch>
          </div>
       </Router>

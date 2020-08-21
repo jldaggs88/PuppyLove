@@ -38,6 +38,9 @@ const getDogs = async (id, req, res) => {
   res.send(findDogs);
 };
 
+const getFriendsList = () => User.findAll({
+});
+
 const getCurrentDog = (userId) => Dog.findAll({ where: { id_user: userId } });
 
 const getLocs = () => Location.findAll();
@@ -85,19 +88,6 @@ const addDog = (dogInfo) => Dog.create(dogInfo);
 
 const addLoc = (locObj) => Location.create(locObj);
 
-// add like to like table
-const addLike = (likeObj) => Likes.create(likeObj);
-
-// query the db for matches
-const getMatches = (id) => {
-  Matches.findAll({
-    where: {
-      id_user: id,
-      result: true,
-    },
-  });
-};
-
 module.exports = {
   isAccCreated,
   getUsers,
@@ -111,6 +101,5 @@ module.exports = {
   addLoc,
   getUser,
   getLocs,
-  addLike,
-  getMatches,
+  getFriendsList,
 };

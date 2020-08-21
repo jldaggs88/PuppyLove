@@ -12,7 +12,7 @@ const {
   addUser, getUsers, getDogs,
   addFriend, isAccCreated,
   addDog, addLoc, getLocs, getFriends,
-  getCurrentDog, 
+  getCurrentDog, getFriendsList,
 } = require('./queries.js');
 const { Likes, Matches } = require('./db/db.js');
 
@@ -56,10 +56,10 @@ app.get('/google/callback',
   });
 
 app.get('/dogs/:id', (req, res) => {
-  let { id } = req.params;
+  const { id } = req.params;
   getDogs(id, req, res);
-    // .then((list) => res.status(200).send(list))
-    // .catch((err) => res.status(500).send(err));
+  // .then((list) => res.status(200).send(list))
+  // .catch((err) => res.status(500).send(err));
 });
 
 // app.get('/myProfileInfo', (req, res) => {
@@ -110,24 +110,29 @@ app.get('/users', (req, res) => {
 app.post('/users', (req, res) => {
   const userInfoObj = req.body;
   const userId = req.session.passport.user.id;
-  addUser(userId, userInfoObj)
-    .then(() => res.sendStatus(201).redirect('/'))
-    .catch((err) => res.sendStatus(500));
+  addUser(userId, userInfoObj).then(() => res.sendStatus(201).redirect('/')).catch((err) => res.sendStatus(500));
+});
+
+app.get('/friendslist', (req, res) => {
+  console.log(req.body);
+  getFriendsList()
+    .then((flist) => res.status(200).send(flist))
+    .catch((err) => res.status(500).send("error getting friends from db", err));
 });
 
 app.post('/dogFriends', (req, res) => {
   const { doggyId } = req.body;
   console.log('/dogFriends', req.body);
   getFriends(doggyId)
-    .then((list) => res.status(200).send(list))
-    .catch((err) => res.sendStatus(500));
+  .then((list) => res.status(200).send(list))
+  .catch((err) => res.sendStatus(500));
 });
-
-app.post('/friends', (req, res) => {
-  const friendObj = {
-    dogId: req.session.passport.dog,
-    friendId: req.body,
-    bool_friend: 1,
+  
+  app.post('/friends', (req, res) => {
+    const friendObj = {
+      dogId: req.session.passport.dog,
+      friendId: req.body,
+      bool_friend: 1,
   };
   addFriend(friendObj)
     .then(() => res.sendStatus(201))
@@ -171,7 +176,7 @@ app.get('*', (req, res) => {
 });
 
 // route to post like by user to db
-app.post('/like', async (req, res)=> {
+app.post('/like', async (req, res) => {
   const { result, dogOwnerId, userId } = req.body;
   console.log('this is the request body in like route', req.body);
   // res.sendStatus(200);
@@ -200,8 +205,6 @@ app.post('/like', async (req, res)=> {
     res.sendStatus(201);
   }
 });
-
-// app.get('/')
 
 /* ============================================================================ */
 

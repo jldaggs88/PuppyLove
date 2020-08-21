@@ -30,7 +30,7 @@ function Choice({ open, sessUser, sessDog, dogViews, displayDogs, getFriends, in
       .then(({ data }) => {
         console.log('the data from the response:', data);
           if (data !== 'Created') {
-            console.log('there was a match')
+            console.log('there was a match', `${sessUser.id} & ${displayDogs[index].id_user}` )
           }
           // response should have bool if user was a match (if exists an entry in likes table that shows the dogOwnerID liked current user ID)
         })

@@ -8,7 +8,7 @@ function MyProfile({ sessUser, sessDog, open }) {
     axios.post('./updateUserAndDog', obj)
     .then((result) => {
       console.log('success')
-    }).catch((err) => console.log('fuuuuuuuck: ', err));
+    }).catch((err) => console.log('Error updating user and dog on submit: ', err));
   }
   const [editUserbuttonClicked, editChange] = useState(false);
   //user edit states
