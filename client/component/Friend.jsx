@@ -1,8 +1,11 @@
 import React from 'react';
 
-function Friend({ match, data }) {
+function Friend({ match, data, matches }) {
 
-  const dogsProfile = data.find(dog => dog.id == match.params.id);
+  let dogsProfile = data.find(dog => dog.id == match.params.id);
+  if (!dogsProfile) {
+    dogsProfile = matches.find(dog => dog.id == match.params.id);
+  }
 
   return (
     <div class='profileContainer'>

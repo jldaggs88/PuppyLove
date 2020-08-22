@@ -17,9 +17,10 @@ function Sidebar({ sessUser, sessDog, getFriends, allDogs }) {
   return (
     <div id="mySidenav" className="navbar">
       <h3>PuppyLove!</h3>
-      <button id='settings' onClick={close}>Menu</button>
+      <button id='settings' onClick={close}>Close</button>
       <div className="nav">
         <Link to="/" id='choice'>Home</Link>
+        <Link to="/matches" id='matches'>Matches</Link>
         <Link to="/login" id='log' onClick={() => {
           logout();
           close();

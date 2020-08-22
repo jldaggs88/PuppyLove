@@ -73,6 +73,17 @@ body {
     border: none;
     background: none;
   }
+  #homeButton {
+    @include hoverAction();
+    position: absolute;
+    top: 80px;
+    font-size: xx-large;
+    margin-left: 20px;
+    text-decoration: underline;
+    color: rgb(230, 222, 222);
+    border: none;
+    background: none;
+  }
 }
 
 h1 {
@@ -114,7 +125,7 @@ h3 {
     margin-left: 10px;
   }
   #view {
-    font-size: 40px;
+    font-size: 30px;
     margin: 0 50px 30px 50px;
     text-decoration: none;
     color: $textBlue;
@@ -200,7 +211,7 @@ h3 {
     #log {
       @include hoverAction();
       @include link();
-      top: 160px;
+      top: 520px;
     }
     #pro {
       @include hoverAction();
@@ -226,6 +237,11 @@ h3 {
       @include hoverAction();
       @include link();
       top: 460px;
+    }
+    #matches {
+      @include hoverAction();
+      @include link();
+      top: 160px;
     }
   }
 }

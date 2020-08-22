@@ -5,16 +5,18 @@ const cors = require('cors');
 const passport = require('passport');
 const cookieSession = require('cookie-session');
 const flash = require('connect-flash');
-const sequelize = require('./db/db.js');
 require('./passport/passport');
-// const data = require('../data.json');
+// const data = require('../data.json')
 const {
   addUser, getUsers, getDogs,
   addFriend, isAccCreated,
   addDog, addLoc, getLocs, getFriends,
-  getCurrentDog, getFriendsList,
+  getCurrentDog, addNewFriend,
+
 } = require('./queries.js');
-const { Likes, Matches } = require('./db/db.js');
+const { Likes, Matches, Sequelize, Dog } = require('./db/db.js');
+
+const { Op } = Sequelize;
 
 const PORT = process.env.PORT || 3000;
 const CLIENT_PATH = path.join(__dirname, '../client/dist');
@@ -57,9 +59,44 @@ app.get('/google/callback',
 
 app.get('/dogs/:id', (req, res) => {
   const { id } = req.params;
-  getDogs(id, req, res);
-  // .then((list) => res.status(200).send(list))
-  // .catch((err) => res.status(500).send(err));
+  getDogs()
+    .then(async (list) => {
+      const likes = await Likes.findAll({
+        where: {
+          id_userA: id,
+        },
+        raw: true,
+      });
+      const likesObj = {};
+      if (likes !== null) {
+        likes.forEach((like) => {
+          likesObj[like.id_userB] = null;
+        });
+      }
+      const responseObj = {};
+      responseObj.dogs = list.filter((dog) => !((dog.id_user in likesObj) || dog.id_user.toString() === id));
+      const matchIDs = await Matches.findAll({
+        where: {
+          [Op.or]: {
+            id_userA: { [Op.like]: `%${id}%` },
+            id_userB: { [Op.like]: `%${id}%` },
+          },
+        },
+      });
+      if (matchIDs !== null) {
+        responseObj.matches = await Promise.all(
+          matchIDs.map(async (entry) => {
+            const id_user = entry.id_userA.toString() === id ? entry.id_userB : entry.id_userA;
+            const dog = await Dog.findOne({ where: { id_user } });
+            return dog;
+          }),
+        );
+      }
+      // responseObj.matches = await
+
+      res.send(responseObj);
+    })
+    .catch((err) => res.status(500).send(err));
 });
 
 // app.get('/myProfileInfo', (req, res) => {
@@ -67,6 +104,21 @@ app.get('/dogs/:id', (req, res) => {
 //   getUser(userId)
 //     .then((list) => res.send(list))
 //     .catch((err) => res.sendStatus(500));
+// });
+// app.get('/like/:id', async (req, res) => {
+//   const { id } = req.params;
+//   const dogs = await Dog.findAll({});
+//   const likes = await Likes.findAll({
+//     where: {
+//       id_userA: id,
+//     },
+//     raw: true,
+//   });
+//   const likesObj = {};
+//   likes.forEach((like) => {
+//     likesObj[like.id_userB] = null;
+//   });
+//   dogs.filter((dog) => !((dog.id_user in likesObj) || dog.id_user === id));
 // });
 
 app.post('/dogs', (req, res) => {
@@ -113,31 +165,30 @@ app.post('/users', (req, res) => {
   addUser(userId, userInfoObj).then(() => res.sendStatus(201).redirect('/')).catch((err) => res.sendStatus(500));
 });
 
-app.get('/friendslist', (req, res) => {
-  console.log(req.body);
-  getFriendsList()
-    .then((flist) => res.status(200).send(flist))
-    .catch((err) => res.status(500).send("error getting friends from db", err));
-});
-
 app.post('/dogFriends', (req, res) => {
   const { doggyId } = req.body;
   console.log('/dogFriends', req.body);
-  getFriends(doggyId)
-  .then((list) => res.status(200).send(list))
-  .catch((err) => res.sendStatus(500));
+  getFriends(doggyId).then((list) => res.status(200).send(list)).catch(() => res.sendStatus(500));
 });
-  
-  app.post('/friends', (req, res) => {
-    const friendObj = {
-      dogId: req.session.passport.dog,
-      friendId: req.body,
-      bool_friend: 1,
-  };
+
+app.post('/friends', (req, res) => {
+  const friendObj = {
+    dogId: req.session.passport.dog,
+    friendId: req.body,
+    bool_friend: 1,
+};
   addFriend(friendObj)
     .then(() => res.sendStatus(201))
-    .catch((err) => res.sendStatus(500));
+    .catch(() => res.sendStatus(500));
 });
+
+// // add friend to friend table not sure about the function above but this one works
+// app.post('/friendslist', (req, res) => {
+//   const { userId, friend } = req.body;
+//   addNewFriend(userId, friend)
+//     .then((res) => res.status(201).send('add new friend route success!'))
+//     .catch((err) => console.error('route to db failed to add new freind', err));
+// });
 
 // app.post('/unfriend', (req, res) => {
 //   const dogId = req.session.passport.dog;
@@ -168,7 +219,11 @@ app.get('/logout', (req, res) => {
 });
 
 app.get('/session', (req, res) => {
-  res.send(req.session.passport.user);
+  if (req.session.passport) {
+    res.send(req.session.passport.user);
+  } else {
+    res.sendStatus(200);
+  }
 });
 
 app.get('*', (req, res) => {
@@ -194,15 +249,15 @@ app.post('/like', async (req, res) => {
     },
   });
 
-  if (likes !== null) {
-    res.send(likes);
+  if (likes !== null && result === true) {
+    res.send(true);
     Matches.create({
       id_userA: userId,
       id_userB: dogOwnerId,
       result: true,
     });
   } else {
-    res.sendStatus(201);
+    res.send(false);
   }
 });
 

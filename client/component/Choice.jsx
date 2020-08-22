@@ -3,15 +3,21 @@ import { Link, Route } from 'react-router-dom';
 import axios from 'axios';
 import { Row, Col } from "react-bootstrap";
 
-function Choice({ open, sessUser, sessDog, dogViews, displayDogs, getFriends, index, setIndex }) {
+function Choice({ open, sessUser, sessDog, dogViews, displayDogs, getFriends, index, setIndex, loadComplete, setMatches, matches, matchViews, setMatchViews, matchPopUp }) {
 
   const [ dogDisplay, setDogDisplay ] = useState('');
   const [ dogDisplayInfo, setDogDisplayInfo ] = useState('');
 
   useEffect(() => {
     // console.log('the current index', index)
-    setDogDisplayInfo(displayDogs[index])
-    setDogDisplay(dogViews[index]);
+    if (displayDogs.length) {
+      setDogDisplayInfo(displayDogs[index])
+      setDogDisplay(dogViews[index]);
+    } else if (loadComplete) {
+      setDogDisplay(<div id='choice-box'><div id='alt'>Looks like you've made it through all the dogs in you're area. Please check back later.</div></div>)
+    } else {
+      setDogDisplay(<div id='choice-box'><div id='alt'>Looking for dogs...</div></div>)
+    }
   }, [dogViews, displayDogs]);
   
 
@@ -22,21 +28,25 @@ function Choice({ open, sessUser, sessDog, dogViews, displayDogs, getFriends, in
 
   const like = (result) => {
     const newIndex = index + 1;
+    const likedIndex = index
     axios.post('/like', {
         result, // boolean
         dogOwnerId: displayDogs[index].id_user,
         userId: sessUser.id
       })
       .then(({ data }) => {
-        console.log('the data from the response:', data);
-          if (data !== 'Created') {
-            console.log('there was a match', `${sessUser.id} & ${displayDogs[index].id_user}` )
+        console.log('the data from the match response:', data);
+          if (data === true) {
+            console.log('there was a match');
+            setMatches(matches.concat(displayDogs[likedIndex]));
+            setMatchViews(matchViews.concat(dogViews[likedIndex]));
+            matchPopUp(displayDogs[likedIndex]);
           }
           // response should have bool if user was a match (if exists an entry in likes table that shows the dogOwnerID liked current user ID)
         })
         setIndex(newIndex);
         if (newIndex < dogViews.length) {
-          setDogDisplay(() => dogViews[newIndex]);
+          setDogDisplay(dogViews[newIndex]);
           setDogDisplayInfo(displayDogs[newIndex]);
         } else {
           setDogDisplay(<div id='choice-box'><div id='alt'>Looks like you've made it through all the dogs in you're area. Please check back later.</div></div>);
@@ -53,7 +63,21 @@ function Choice({ open, sessUser, sessDog, dogViews, displayDogs, getFriends, in
           //   .then(() => console.log('this friend was added'))
           //   .catch((err) => console.error(err, 'we couldn\'t add this friend'));
           // };
-          
+    const no = dogDisplayInfo ?
+        <Col>
+          <button id='no' onClick={() => like(false)}>No</button>
+        </Col> : '';
+
+    const yes = dogDisplayInfo ?
+        <Col>
+          <button id='yes' onClick={() => like(true)}>Yes</button>
+        </Col> : '';
+
+    const profileLink = dogDisplayInfo ?
+        <Col>
+          <Link to={`/dogprofile/${dogDisplayInfo.id}`} id='view' onClick={() => getFriends(dogDisplayInfo.id)}>View Profile</Link>
+        </Col> : '';
+          // if (!dogDisplayInfo) setDogDisplay(<div id='choice-box'><div id='alt'>Looks like you've made it through all the dogs in you're area. Please check back later.</div></div>);
           return (
             <div>
       <div>
@@ -66,15 +90,9 @@ function Choice({ open, sessUser, sessDog, dogViews, displayDogs, getFriends, in
           </Col>
         </Row>
         <Row id='select'>
-          <Col>
-            <button id='no' onClick={() => like(false)}>No</button>
-          </Col>
-          <Col>
-            <button id='yes' onClick={() => like(true)}>Yes</button>
-          </Col>
-          <Col>
-            <Link to={`/dogprofile/${dogDisplayInfo.id}`} id='view' onClick={() => getFriends(dogDisplayInfo.id)}>View Profile</Link>
-          </Col>
+          {no}
+          {yes}
+          {profileLink}
         </Row>
       </div>
     </div>
@@ -82,4 +100,3 @@ function Choice({ open, sessUser, sessDog, dogViews, displayDogs, getFriends, in
 };
 
 export default Choice;
- 

@@ -3,7 +3,7 @@ import { Link, Route } from 'react-router-dom';
 import axios from 'axios';
 import Friend from './Friend.jsx';
 
-function DogProfile({ match, open, sessUser, sessDog, allDogs, friends, getFriends }) {
+function DogProfile({ match, open, sessUser, sessDog, allDogs, friends, getFriends, matches }) {
 
   // const unfriend = (friendId) => {
   //   axios.post('/unfriend', { id_dog: sessDog.id, id_friend: friendId, bool_friend: 1 })
@@ -27,11 +27,11 @@ function DogProfile({ match, open, sessUser, sessDog, allDogs, friends, getFrien
     <div>
       <div class='profileContainer'>
         <button id='settings' onClick={open}>Menu</button>
-        <Link to="/" id='choice'>Home</Link>
+        <Link to="/" id='homeButton'>Home</Link>
         <div>
           <Route
             path={'/dogProfile/:id'}
-            render={(props) => (<Friend data={allDogs} {...props} />)}
+            render={(props) => (<Friend data={allDogs} matches={matches} {...props} />)}
           />
         </div>
         {/* <h3>Friends</h3> */}

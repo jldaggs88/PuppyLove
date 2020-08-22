@@ -1,7 +1,7 @@
 require('dotenv').config();
 const fetch = require('node-fetch');
 
-const NEW_DOGS = 1; // Variable to set total new dogs to add
+const NEW_DOGS = 5; // Variable to set total new dogs to add
 const TOTAL_USERS = 5; // Total number of users in DB for dogs to belong to
 
 // Adjectives bank for dog description
